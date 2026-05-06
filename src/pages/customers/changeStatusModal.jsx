@@ -17,15 +17,13 @@ const ChangeStatusModal = ({ customerId, show, onHide, statusId, setStatus, stat
     setWorking(true);
     const now = new Date();
 
-    var source = {
-      nodeId: customerId,
-      sourceGroupId: "Status",
-      date: now.toISOString(),
-      value: statusUpdatedId,
-      externalId: now.toISOString()
-    };
+    let item = [{
+      op: "replace",
+      path: "/status",
+      value: statusUpdatedId
+    }];
 
-    SendRequest("POST", "/api/v1/Sources", source, () => {
+    SendRequest("PATCH", `/api/v1/Customers/${customerId}`, item, () => {
       var item = statuses.find(element => element.id == statusUpdatedId);
       setTimeout(() => {
         setWorking(false);
