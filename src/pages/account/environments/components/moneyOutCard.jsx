@@ -5,6 +5,7 @@ import { SendRequest } from '../../../../hooks/usePost'
 import Modal from '../../../../components/modal';
 import SelectInput from '../../../../components/selectInput';
 import TextInput from '../../../../components/textInput';
+import TextArea from '../../../../components/textArea';
 import MoneyOutLogs from './moneyOutLogs';
 
 const MoneyOutCard = ({ environmentId }) => {
@@ -30,6 +31,10 @@ const MoneyOutCard = ({ environmentId }) => {
         if (currentServiceType === "PayQuicker") {
           updated.url = "https://pillars-payquicker-hxhwgsf6hae0abbk.centralus-01.azurewebsites.net";
           updated.headerKeys = { "x-pq_environment": "p" };
+        }
+        if (currentServiceType === "MassPay") {
+          updated.url = "https://masspay.paymenture.com";
+          updated.headerKeys = { "x-mp_environment": "p" };
         }
 
         return updated;
@@ -158,6 +163,7 @@ const MoneyOutCard = ({ environmentId }) => {
             <option value="Pillars">Pillars Internal</option>
             <option value="Paymenture">Paymenture</option>
             <option value="PayQuicker">PayQuicker</option>
+            <option value="MassPay">MassPay</option>
             <option value="Custom">Custom</option>
           </SelectInput>
           {connect?.serviceType == "Paymenture" && <small className="form-hint mt-2 ecom-woo">
@@ -238,6 +244,21 @@ const MoneyOutCard = ({ environmentId }) => {
             </SelectInput>
           </div>
 
+        </>}
+
+        {connect?.serviceType == "MassPay" && <>
+          <div className="mb-3">
+            <label className="form-label">API Key</label>
+            <TextArea name="x-mp_apiKey" value={connect?.headerKeys["x-mp_apiKey"]} errorText={connect?.error?.privateKey} onChange={handleChange} />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">MassPay environment</label>
+            <SelectInput name="x-mp_environment" value={connect?.headerKeys["x-mp_environment"] ?? ''} errorText={connect?.error?.privateKey} onChange={handleChange} >
+              <option value="" disabled>Select Environment</option>
+              <option value="p">Production</option>
+              <option value="s">Sandbox</option>
+            </SelectInput>
+          </div>
         </>}
 
         {connect?.serviceType == "Custom" && <>

@@ -21,6 +21,32 @@ function getValueByPath(obj, path) {
   }, obj);
 }
 
+const DOCUMENT_ONLY_TAG_PATTERN = /<!doctype|<\/?(html|head|body|title|meta|link|base)\b/i;
+const DOCUMENT_ONLY_SELECTOR = 'title, meta, link, base';
+
+function stripDocumentOnlyTags(htmlContent) {
+  if (typeof htmlContent !== 'string' || !DOCUMENT_ONLY_TAG_PATTERN.test(htmlContent)) {
+    return htmlContent ?? '';
+  }
+
+  if (typeof DOMParser === 'undefined' || typeof document === 'undefined') {
+    return htmlContent
+      .replace(/<!doctype[^>]*>/gi, '')
+      .replace(/<head\b[^>]*>[\s\S]*?<\/head>/gi, '')
+      .replace(/<\/?(html|body)\b[^>]*>/gi, '')
+      .replace(/<title\b[^>]*>[\s\S]*?<\/title>/gi, '')
+      .replace(/<(?:meta|link|base)\b[^>]*\/?>/gi, '')
+      .trim();
+  }
+
+  const parsed = new DOMParser().parseFromString(htmlContent, 'text/html');
+  const template = document.createElement('template');
+  template.innerHTML = parsed.body?.innerHTML ?? '';
+  template.content.querySelectorAll(DOCUMENT_ONLY_SELECTOR).forEach((element) => element.remove());
+
+  return template.innerHTML;
+}
+
 
 const HtmlWidget = ({ html, customer, widget, isPreview }) => {
   var [data, setData] = useState({});
@@ -172,7 +198,7 @@ const HtmlWidget = ({ html, customer, widget, isPreview }) => {
 
     try {
       // Attempt to parse and render output
-      renderedOutput = <>{parse(output ?? '')}</>;
+      renderedOutput = <>{parse(stripDocumentOnlyTags(output))}</>;
     } catch (error) {
       // Handle parsing or rendering error
       console.error('Error parsing or rendering output:', error);
